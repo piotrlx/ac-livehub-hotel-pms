@@ -1,0 +1,20 @@
+#:schema node_modules/wrangler/config-schema.json
+name = "audiocodes-livehub-workshop-hotel-pms"
+main = "src/index.ts"
+compatibility_date = "2025-04-01"
+compatibility_flags = ["nodejs_compat"]
+
+# Cloudflare Pages / Workers static assets
+assets = { directory = "public" }
+
+# D1 Database binding
+[[d1_databases]]
+binding = "DB"
+database_name = "hotel-db"
+database_id = "placeholder-create-via-wrangler"
+
+# Environment variables (non-secret)
+[vars]
+HOTEL_NAME = "Grand Hotel Warszawa"
+HOTEL_ADDRESS = "ul. Marszałkowska 1, 00-001 Warszawa"
+ENVIRONMENT = "development"
