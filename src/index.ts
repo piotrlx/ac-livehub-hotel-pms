@@ -55,6 +55,23 @@ const adminAuth = async (c: any, next: any) => {
   await next();
 };
 
+// Auto-login context based on wildcard subdomain (e.g., 1001.audiocodes.live)
+app.get('/api/auth/context', async (c) => {
+  const host = c.req.header('Host') || '';
+  const match = host.match(/^(\d{4})\./); // Szuka 4 cyfr na początku subdomeny
+  
+  if (match) {
+    const roomNum = match[1];
+    const room = await c.env.DB.prepare('SELECT access_token FROM rooms WHERE number = ?')
+      .bind(roomNum).first<{ access_token: string }>();
+      
+    if (room) {
+      return c.json({ room: roomNum, token: room.access_token });
+    }
+  }
+  return c.json({ room: null, token: null });
+});
+
 // ==========================================
 // AI AGENT ENDPOINTS (Requires Agent Auth)
 // ==========================================

@@ -47,7 +47,29 @@
     const dashboardView = document.getElementById('dashboard-view');
     let currentToken = localStorage.getItem('hotel_token');
 
-    if (currentToken) showDashboard();
+    // Auto-login z subdomeny (np. 1001.audiocodes.live)
+    async function checkSubdomainAuth() {
+      try {
+        const res = await fetch('/api/auth/context');
+        const data = await res.json();
+        
+        if (data.token) {
+          currentToken = data.token;
+          localStorage.setItem('hotel_token', data.token);
+          showDashboard();
+          return true;
+        }
+      } catch(e) {}
+      return false;
+    }
+
+    // Start
+    (async function init() {
+      const autoLogged = await checkSubdomainAuth();
+      if (!autoLogged && currentToken) {
+        showDashboard();
+      }
+    })();
 
     function login() {
       const token = document.getElementById('token-input').value.trim();
