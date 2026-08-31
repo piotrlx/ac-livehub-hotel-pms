@@ -18,3 +18,4 @@ database_id = "placeholder-create-via-wrangler"
 HOTEL_NAME = "Grand Hotel Warszawa"
 HOTEL_ADDRESS = "ul. Marszałkowska 1, 00-001 Warszawa"
 ENVIRONMENT = "development"
+ADMIN_SECRET = "warsztaty2026"  # Hasło do panelu admina

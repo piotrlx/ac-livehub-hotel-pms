@@ -3,10 +3,109 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Grand Hotel Warszawa — Dashboard</title>
+  <title>Panel Uczestnika — Grand Hotel</title>
+  <script src="https://cdn.tailwindcss.com"></script>
 </head>
-<body>
-  <h1>🏨 Grand Hotel Warszawa — Dashboard</h1>
-  <p>Panel administracyjny — w budowie.</p>
+<body class="bg-gray-100 font-sans text-gray-800">
+
+  <div class="max-w-2xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md" id="login-view">
+    <h1 class="text-2xl font-bold mb-4">🏨 Logowanie do Panelu Pokoju</h1>
+    <p class="mb-4 text-gray-600">Wpisz swój token dostępu, który otrzymałeś w instrukcji.</p>
+    <input type="text" id="token-input" placeholder="np. wk-1001-a1b2c3" class="w-full p-2 border rounded mb-4">
+    <button onclick="login()" class="w-full bg-blue-600 text-white p-2 rounded hover:bg-blue-700">Zaloguj</button>
+  </div>
+
+  <div class="max-w-4xl mx-auto mt-10 p-6 bg-white rounded-lg shadow-md hidden" id="dashboard-view">
+    <div class="flex justify-between items-center mb-6 border-b pb-4">
+      <h1 class="text-2xl font-bold">🏨 Panel Pokoju <span id="room-number" class="text-blue-600"></span></h1>
+      <button onclick="logout()" class="text-sm text-red-600 hover:underline">Wyloguj</button>
+    </div>
+
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+      
+      <!-- Maintenance -->
+      <div class="border rounded-lg p-4 bg-gray-50">
+        <h2 class="text-lg font-semibold mb-3 border-b pb-2">🔧 Zgłoszenia Usterki (Maintenance)</h2>
+        <div id="maintenance-content" class="text-sm">Brak zgłoszeń.</div>
+      </div>
+
+      <!-- Housekeeping -->
+      <div class="border rounded-lg p-4 bg-gray-50">
+        <h2 class="text-lg font-semibold mb-3 border-b pb-2">🧹 Serwis Sprzątający (Housekeeping)</h2>
+        <div id="housekeeping-content" class="text-sm">Brak zgłoszeń.</div>
+      </div>
+
+    </div>
+    
+    <div class="mt-6 text-center">
+      <button onclick="fetchData()" class="bg-gray-200 hover:bg-gray-300 px-4 py-2 rounded text-sm">🔄 Odśwież dane</button>
+    </div>
+  </div>
+
+  <script>
+    const loginView = document.getElementById('login-view');
+    const dashboardView = document.getElementById('dashboard-view');
+    let currentToken = localStorage.getItem('hotel_token');
+
+    if (currentToken) showDashboard();
+
+    function login() {
+      const token = document.getElementById('token-input').value.trim();
+      if (!token) return alert('Podaj token!');
+      localStorage.setItem('hotel_token', token);
+      currentToken = token;
+      showDashboard();
+    }
+
+    function logout() {
+      localStorage.removeItem('hotel_token');
+      currentToken = null;
+      dashboardView.classList.add('hidden');
+      loginView.classList.remove('hidden');
+    }
+
+    function showDashboard() {
+      loginView.classList.add('hidden');
+      dashboardView.classList.remove('hidden');
+      fetchData();
+    }
+
+    async function fetchData() {
+      try {
+        // We'll need a dedicated endpoint to fetch all room info for the dashboard
+        // For now, this is a mock implementation showing where the data goes.
+        const res = await fetch('/api/agent/maintenance/status', {
+          headers: { 'Authorization': `Bearer ${currentToken}` }
+        });
+        
+        if (res.status === 401) {
+          alert('Nieważny token.');
+          return logout();
+        }
+
+        const data = await res.json();
+        
+        // Extract room number from token (assuming format wk-XXXX-...)
+        const roomMatch = currentToken.match(/wk-(\d+)-/);
+        if (roomMatch) document.getElementById('room-number').innerText = roomMatch[1];
+
+        const mContent = document.getElementById('maintenance-content');
+        if (data.has_active_tickets) {
+          const t = data.ticket;
+          mContent.innerHTML = `
+            <div class="bg-white p-3 border rounded shadow-sm">
+              <div class="font-bold">Zgłoszenie: ${t.id}</div>
+              <div>Status: <span class="px-2 py-1 bg-yellow-200 rounded text-xs">${t.status}</span></div>
+              <div>Kategoria: ${t.category}</div>
+              <div class="text-xs text-gray-500 mt-1">Dodano: ${t.created_at}</div>
+            </div>`;
+        } else {
+          mContent.innerHTML = 'Brak aktywnych zgłoszeń.';
+        }
+      } catch (err) {
+        console.error('Błąd pobierania danych', err);
+      }
+    }
+  </script>
 </body>
 </html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Panel Administratora — LiveHub Hotel PMS</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 font-sans text-gray-800">
+
+  <!-- Ekran logowania (Admin) -->
+  <div id="login-view" class="max-w-md mx-auto mt-20 p-8 bg-white rounded-xl shadow-lg border border-gray-200">
+    <div class="text-center mb-6">
+      <h1 class="text-2xl font-bold text-gray-900">👑 Panel Administratora</h1>
+      <p class="text-sm text-gray-500 mt-2">Zarządzanie środowiskiem warsztatowym</p>
+    </div>
+    <input type="password" id="admin-secret" placeholder="Hasło (np. warsztaty2026)" class="w-full p-3 border rounded-lg mb-4 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
+    <button onclick="loginAdmin()" class="w-full bg-blue-600 text-white font-semibold p-3 rounded-lg hover:bg-blue-700 transition">Zaloguj</button>
+  </div>
+
+  <!-- Główny Dashboard -->
+  <div id="dashboard-view" class="max-w-7xl mx-auto mt-10 p-6 hidden">
+    
+    <div class="flex justify-between items-end mb-8 border-b pb-4 border-gray-300">
+      <div>
+        <h1 class="text-3xl font-bold text-gray-900">Dashboard Administratora</h1>
+        <p class="text-gray-500 mt-1">AudioCodes Live Hub PMS</p>
+      </div>
+      <div>
+        <button onclick="fetchData()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition mr-2">🔄 Odśwież</button>
+        <button onclick="logoutAdmin()" class="text-red-600 font-medium hover:underline">Wyloguj</button>
+      </div>
+    </div>
+
+    <!-- Zakładki -->
+    <div class="flex gap-4 mb-6">
+      <button onclick="switchTab('rooms')" id="tab-rooms" class="px-5 py-2.5 font-medium rounded-lg bg-blue-600 text-white transition">🚪 Pokoje / Uczestnicy</button>
+      <button onclick="switchTab('tickets')" id="tab-tickets" class="px-5 py-2.5 font-medium rounded-lg bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 transition">🔧 Zgłoszenia z AI</button>
+    </div>
+
+    <!-- ZAKŁADKA 1: POKOJE -->
+    <div id="content-rooms" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+      <div class="flex justify-between items-center mb-6">
+        <h2 class="text-xl font-bold text-gray-800">Uczestnicy warsztatów</h2>
+        
+        <!-- Formularz dodawania -->
+        <div class="flex gap-2">
+          <input type="text" id="new-name" placeholder="Imię i Nazwisko" class="border p-2 rounded text-sm w-48">
+          <input type="email" id="new-email" placeholder="E-mail" class="border p-2 rounded text-sm w-48">
+          <button onclick="createRoom()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition">+ Dodaj Uczestnika</button>
+        </div>
+      </div>
+
+      <div class="overflow-x-auto">
+        <table class="w-full text-left border-collapse">
+          <thead>
+            <tr class="bg-gray-50 border-b border-gray-200">
+              <th class="p-3 text-sm font-semibold text-gray-600">Pokój</th>
+              <th class="p-3 text-sm font-semibold text-gray-600">Uczestnik</th>
+              <th class="p-3 text-sm font-semibold text-gray-600">E-mail</th>
+              <th class="p-3 text-sm font-semibold text-gray-600">Numer SIP (+48)</th>
+              <th class="p-3 text-sm font-semibold text-gray-600">Token dostępu (Klucz)</th>
+              <th class="p-3 text-sm font-semibold text-gray-600 text-right">Akcje</th>
+            </tr>
+          </thead>
+          <tbody id="rooms-tbody" class="divide-y divide-gray-200">
+            <!-- Pokoje generowane przez JS -->
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- ZAKŁADKA 2: ZGŁOSZENIA -->
+    <div id="content-tickets" class="hidden">
+      
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <!-- Kolumna Maintenance -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">🔧 Awarie (Maintenance)</h2>
+          <div id="maintenance-list" class="space-y-3">
+            <!-- Zgłoszenia generowane przez JS -->
+          </div>
+        </div>
+
+        <!-- Kolumna Housekeeping -->
+        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
+          <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">🧹 Sprzątanie (Housekeeping)</h2>
+          <div id="housekeeping-list" class="space-y-3">
+            <!-- Zgłoszenia generowane przez JS -->
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <script>
+    let adminSecret = localStorage.getItem('admin_secret');
+    
+    // Inicjalizacja
+    if (adminSecret) {
+      showDashboard();
+    }
+
+    function loginAdmin() {
+      const secret = document.getElementById('admin-secret').value.trim();
+      if (!secret) return;
+      adminSecret = secret;
+      localStorage.setItem('admin_secret', secret);
+      showDashboard();
+    }
+
+    function logoutAdmin() {
+      adminSecret = null;
+      localStorage.removeItem('admin_secret');
+      document.getElementById('dashboard-view').classList.add('hidden');
+      document.getElementById('login-view').classList.remove('hidden');
+    }
+
+    function showDashboard() {
+      document.getElementById('login-view').classList.add('hidden');
+      document.getElementById('dashboard-view').classList.remove('hidden');
+      fetchData();
+    }
+
+    function switchTab(tab) {
+      document.getElementById('content-rooms').classList.add('hidden');
+      document.getElementById('content-tickets').classList.add('hidden');
+      
+      document.getElementById('tab-rooms').className = "px-5 py-2.5 font-medium rounded-lg bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 transition";
+      document.getElementById('tab-tickets').className = "px-5 py-2.5 font-medium rounded-lg bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 transition";
+      
+      document.getElementById(`content-${tab}`).classList.remove('hidden');
+      document.getElementById(`tab-${tab}`).className = "px-5 py-2.5 font-medium rounded-lg bg-blue-600 text-white transition";
+    }
+
+    // ----------------------------------------------------
+    // API CALLS
+    // ----------------------------------------------------
+
+    async function apiRequest(endpoint, method = 'GET', body = null) {
+      const options = {
+        method,
+        headers: {
+          'Authorization': `Bearer ${adminSecret}`,
+          'Content-Type': 'application/json'
+        }
+      };
+      if (body) options.body = JSON.stringify(body);
+      
+      const res = await fetch(endpoint, options);
+      if (res.status === 401 || res.status === 403) {
+        alert('Błędne hasło administratora!');
+        logoutAdmin();
+        return null;
+      }
+      return await res.json();
+    }
+
+    async function fetchData() {
+      if (!adminSecret) return;
+      await fetchRooms();
+      await fetchTickets();
+    }
+
+    async function fetchRooms() {
+      const rooms = await apiRequest('/api/admin/rooms');
+      if (!rooms) return;
+
+      const tbody = document.getElementById('rooms-tbody');
+      tbody.innerHTML = '';
+
+      rooms.forEach(room => {
+        tbody.innerHTML += `
+          <tr class="hover:bg-gray-50">
+            <td class="p-3 font-semibold text-gray-900">${room.number}</td>
+            <td class="p-3 text-gray-800">${room.participant_name || '—'}</td>
+            <td class="p-3 text-gray-500">${room.participant_email || '—'}</td>
+            <td class="p-3 text-gray-800 font-mono text-sm">${room.phone_number}</td>
+            <td class="p-3 text-gray-500 font-mono text-xs select-all bg-gray-100 rounded px-2 py-1">${room.access_token}</td>
+            <td class="p-3 text-right">
+              <button onclick="deleteRoom('${room.number}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Usuń</button>
+            </td>
+          </tr>
+        `;
+      });
+    }
+
+    async function createRoom() {
+      const name = document.getElementById('new-name').value.trim();
+      const email = document.getElementById('new-email').value.trim();
+      if (!name) return alert('Podaj imię i nazwisko');
+      
+      await apiRequest('/api/admin/rooms', 'POST', { participant_name: name, participant_email: email });
+      document.getElementById('new-name').value = '';
+      document.getElementById('new-email').value = '';
+      fetchRooms();
+    }
+
+    async function deleteRoom(number) {
+      if (!confirm(`Usunąć pokój ${number}?`)) return;
+      await apiRequest(`/api/admin/rooms/${number}`, 'DELETE');
+      fetchRooms();
+    }
+
+    async function fetchTickets() {
+      const data = await apiRequest('/api/admin/tickets');
+      if (!data) return;
+
+      // Render Maintenance
+      const mList = document.getElementById('maintenance-list');
+      mList.innerHTML = '';
+      data.maintenance.forEach(t => {
+        mList.innerHTML += createTicketHTML('maintenance', t);
+      });
+
+      // Render Housekeeping
+      const hkList = document.getElementById('housekeeping-list');
+      hkList.innerHTML = '';
+      data.housekeeping.forEach(t => {
+        hkList.innerHTML += createTicketHTML('housekeeping', t);
+      });
+    }
+
+    function createTicketHTML(type, t) {
+      const bg = t.status === 'resolved' || t.status === 'completed' ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200';
+      
+      return `
+        <div class="border rounded-lg p-4 ${bg} shadow-sm">
+          <div class="flex justify-between items-start mb-2">
+            <div>
+              <span class="font-bold text-gray-900">${t.id}</span>
+              <span class="text-xs ml-2 text-gray-500">Pokój: <span class="font-bold text-gray-800">${t.room_number}</span></span>
+            </div>
+            <div>
+              <select onchange="changeStatus('${type}', '${t.id}', this.value)" class="text-xs border rounded p-1 font-medium bg-white outline-none">
+                <option value="open" ${t.status==='open'||t.status==='pending' ? 'selected':''}>Otwarty (Pending)</option>
+                <option value="in_progress" ${t.status==='in_progress' ? 'selected':''}>W realizacji</option>
+                <option value="${type==='maintenance'?'resolved':'completed'}" ${t.status==='resolved'||t.status==='completed' ? 'selected':''}>Zakończony</option>
+              </select>
+            </div>
+          </div>
+          <div class="text-sm text-gray-700">
+            ${type === 'maintenance' 
+              ? `<span class="font-semibold text-red-600">[${t.category.toUpperCase()}]</span> ${t.description}` 
+              : `<span class="font-semibold text-blue-600">[Items]</span> ${t.items}`
+            }
+          </div>
+        </div>
+      `;
+    }
+
+    async function changeStatus(type, id, status) {
+      await apiRequest(`/api/admin/tickets/${type}/${id}`, 'PUT', { status });
+      // Brak przeładowania całej tabeli, aby nie migało UI (zmiana jest w tle)
+    }
+
+  </script>
+</body>
+</html>
