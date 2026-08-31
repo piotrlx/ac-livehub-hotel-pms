@@ -10,6 +10,9 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://unpkg.com/lucide@latest"></script>
   <script>
+    if (window.location.hostname.startsWith('100')) {
+      window.location.replace('/');
+    }
     tailwind.config = {
       theme: {
         extend: {
@@ -223,8 +226,8 @@
 
     async function fetchRooms() {
       try {
-        const res = await fetch('/api/admin/rooms', { headers: { 'Authorization': adminSecret }});
-        if (res.status === 401) { alert('Błędne hasło admina.'); return logoutAdmin(); }
+        const res = await fetch('/api/admin/rooms', { headers: { 'Authorization': 'Bearer ' + adminSecret }});
+        if (res.status === 401 || res.status === 403) { alert('Błędne hasło admina.'); return logoutAdmin(); }
         const rooms = await res.json();
         
         const tbody = document.getElementById('rooms-tbody');
@@ -262,8 +265,8 @@
       
       const res = await fetch('/api/admin/rooms', {
         method: 'POST',
-        headers: { 'Authorization': adminSecret, 'Content-Type': 'application/json' },
-        body: JSON.stringify({ guest_name: name, guest_email: email })
+        headers: { 'Authorization': 'Bearer ' + adminSecret, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ participant_name: name, participant_email: email })
       });
       if (res.ok) {
         document.getElementById('new-name').value = '';
@@ -278,7 +281,7 @@
       if (!confirm(`Usunąć pokój ${number}?`)) return;
       await fetch(`/api/admin/rooms/${number}`, {
         method: 'DELETE',
-        headers: { 'Authorization': adminSecret }
+        headers: { 'Authorization': 'Bearer ' + adminSecret }
       });
       fetchRooms();
     }
@@ -296,7 +299,7 @@
 
     async function fetchTickets() {
       try {
-        const res = await fetch('/api/admin/tickets', { headers: { 'Authorization': adminSecret }});
+        const res = await fetch('/api/admin/tickets', { headers: { 'Authorization': 'Bearer ' + adminSecret }});
         const data = await res.json();
         
         const mList = document.getElementById('maintenance-list');
@@ -355,8 +358,8 @@
     async function changeStatus(type, id) {
       const newStatus = document.getElementById(`status-${type==='maintenance'?'m':'h'}-${id}`).value;
       const res = await fetch(`/api/admin/tickets/${type}/${id}`, {
-        method: 'PATCH',
-        headers: { 'Authorization': adminSecret, 'Content-Type': 'application/json' },
+        method: 'PUT',
+        headers: { 'Authorization': 'Bearer ' + adminSecret, 'Content-Type': 'application/json' },
         body: JSON.stringify({ status: newStatus })
       });
       if (res.ok) fetchTickets();
