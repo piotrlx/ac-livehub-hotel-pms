@@ -3,258 +3,365 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Panel Administratora — LiveHub Hotel PMS</title>
+  <title>Admin PMS — Grand Hotel</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { sans: ['Inter', 'sans-serif'] },
+          colors: { brand: { 50: '#f0f9ff', 100: '#e0f2fe', 600: '#0284c7', 900: '#0c4a6e' } }
+        }
+      }
+    }
+  </script>
 </head>
-<body class="bg-gray-100 font-sans text-gray-800">
+<body class="bg-slate-50 font-sans text-slate-800 antialiased min-h-screen flex flex-col md:flex-row">
 
   <!-- Ekran logowania (Admin) -->
-  <div id="login-view" class="max-w-md mx-auto mt-20 p-8 bg-white rounded-xl shadow-lg border border-gray-200">
-    <div class="text-center mb-6">
-      <h1 class="text-2xl font-bold text-gray-900">👑 Panel Administratora</h1>
-      <p class="text-sm text-gray-500 mt-2">Zarządzanie środowiskiem warsztatowym</p>
+  <div id="login-view" class="flex-1 flex flex-col justify-center items-center p-4 bg-slate-900 w-full min-h-screen absolute inset-0 z-50">
+    <div class="bg-white p-10 rounded-2xl shadow-2xl w-full max-w-md text-center">
+      <div class="w-16 h-16 bg-slate-100 text-slate-900 rounded-2xl flex items-center justify-center mx-auto mb-6">
+        <i data-lucide="crown" class="w-8 h-8"></i>
+      </div>
+      <h1 class="text-2xl font-bold text-slate-900 mb-2">Panel Administratora</h1>
+      <p class="text-slate-500 mb-8 text-sm">Zarządzanie środowiskiem warsztatowym</p>
+      
+      <div class="space-y-4">
+        <div class="relative">
+          <i data-lucide="lock" class="absolute left-3 top-3 text-slate-400 w-5 h-5"></i>
+          <input type="password" id="admin-secret" placeholder="Hasło (np. warsztaty2026)" class="w-full pl-10 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-slate-900 focus:bg-white transition-all text-sm font-medium">
+        </div>
+        <button onclick="loginAdmin()" class="w-full bg-slate-900 text-white font-semibold py-3 rounded-xl hover:bg-slate-800 shadow-md hover:shadow-lg transition-all flex items-center justify-center gap-2">
+          <span>Zaloguj</span>
+          <i data-lucide="arrow-right" class="w-4 h-4"></i>
+        </button>
+      </div>
     </div>
-    <input type="password" id="admin-secret" placeholder="Hasło (np. warsztaty2026)" class="w-full p-3 border rounded-lg mb-4 bg-gray-50 focus:outline-none focus:ring-2 focus:ring-blue-500">
-    <button onclick="loginAdmin()" class="w-full bg-blue-600 text-white font-semibold p-3 rounded-lg hover:bg-blue-700 transition">Zaloguj</button>
   </div>
 
-  <!-- Główny Dashboard -->
-  <div id="dashboard-view" class="max-w-7xl mx-auto mt-10 p-6 hidden">
+  <!-- Dashboard Admina -->
+  <div id="dashboard-view" class="hidden flex-1 w-full flex flex-col md:flex-row h-screen overflow-hidden bg-slate-50">
     
-    <div class="flex justify-between items-end mb-8 border-b pb-4 border-gray-300">
-      <div>
-        <h1 class="text-3xl font-bold text-gray-900">Dashboard Administratora</h1>
-        <p class="text-gray-500 mt-1">AudioCodes Live Hub PMS</p>
-      </div>
-      <div>
-        <button onclick="fetchData()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg font-medium hover:bg-gray-300 transition mr-2">🔄 Odśwież</button>
-        <button onclick="logoutAdmin()" class="text-red-600 font-medium hover:underline">Wyloguj</button>
-      </div>
-    </div>
-
-    <!-- Zakładki -->
-    <div class="flex gap-4 mb-6">
-      <button onclick="switchTab('rooms')" id="tab-rooms" class="px-5 py-2.5 font-medium rounded-lg bg-blue-600 text-white transition">🚪 Pokoje / Uczestnicy</button>
-      <button onclick="switchTab('tickets')" id="tab-tickets" class="px-5 py-2.5 font-medium rounded-lg bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 transition">🔧 Zgłoszenia z AI</button>
-    </div>
-
-    <!-- ZAKŁADKA 1: POKOJE -->
-    <div id="content-rooms" class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-      <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-bold text-gray-800">Uczestnicy warsztatów</h2>
-        
-        <!-- Formularz dodawania -->
-        <div class="flex gap-2">
-          <input type="text" id="new-name" placeholder="Imię i Nazwisko" class="border p-2 rounded text-sm w-48">
-          <input type="email" id="new-email" placeholder="E-mail" class="border p-2 rounded text-sm w-48">
-          <button onclick="createRoom()" class="bg-green-600 hover:bg-green-700 text-white px-4 py-2 rounded text-sm font-medium transition">+ Dodaj Uczestnika</button>
+    <!-- Sidebar -->
+    <aside class="w-full md:w-64 bg-slate-900 text-slate-300 flex flex-col shadow-xl z-20">
+      <div class="p-6 flex items-center gap-3 border-b border-slate-800">
+        <div class="bg-brand-600 text-white p-2 rounded-lg">
+          <i data-lucide="building" class="w-5 h-5"></i>
         </div>
+        <span class="font-bold text-white text-lg tracking-tight">Hotel Admin</span>
       </div>
-
-      <div class="overflow-x-auto">
-        <table class="w-full text-left border-collapse">
-          <thead>
-            <tr class="bg-gray-50 border-b border-gray-200">
-              <th class="p-3 text-sm font-semibold text-gray-600">Pokój</th>
-              <th class="p-3 text-sm font-semibold text-gray-600">Uczestnik</th>
-              <th class="p-3 text-sm font-semibold text-gray-600">E-mail</th>
-              <th class="p-3 text-sm font-semibold text-gray-600">Numer SIP (+48)</th>
-              <th class="p-3 text-sm font-semibold text-gray-600">Token dostępu (Klucz)</th>
-              <th class="p-3 text-sm font-semibold text-gray-600 text-right">Akcje</th>
-            </tr>
-          </thead>
-          <tbody id="rooms-tbody" class="divide-y divide-gray-200">
-            <!-- Pokoje generowane przez JS -->
-          </tbody>
-        </table>
-      </div>
-    </div>
-
-    <!-- ZAKŁADKA 2: ZGŁOSZENIA -->
-    <div id="content-tickets" class="hidden">
       
-      <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <!-- Kolumna Maintenance -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">🔧 Awarie (Maintenance)</h2>
-          <div id="maintenance-list" class="space-y-3">
-            <!-- Zgłoszenia generowane przez JS -->
-          </div>
-        </div>
+      <nav class="flex-1 p-4 space-y-2">
+        <button id="tab-rooms" onclick="switchTab('rooms')" class="w-full flex items-center gap-3 px-4 py-3 bg-slate-800 text-white rounded-xl transition-all font-medium text-sm">
+          <i data-lucide="users" class="w-5 h-5"></i>
+          Pokoje i Uczestnicy
+        </button>
+        <button id="tab-tickets" onclick="switchTab('tickets')" class="w-full flex items-center gap-3 px-4 py-3 hover:bg-slate-800 hover:text-white rounded-xl transition-all font-medium text-sm">
+          <i data-lucide="ticket" class="w-5 h-5"></i>
+          Zgłoszenia (Tickets)
+        </button>
+      </nav>
 
-        <!-- Kolumna Housekeeping -->
-        <div class="bg-white rounded-xl shadow-sm border border-gray-200 p-6">
-          <h2 class="text-xl font-bold text-gray-800 mb-4 border-b pb-2">🧹 Sprzątanie (Housekeeping)</h2>
-          <div id="housekeeping-list" class="space-y-3">
-            <!-- Zgłoszenia generowane przez JS -->
-          </div>
-        </div>
+      <div class="p-4 border-t border-slate-800">
+        <button onclick="logoutAdmin()" class="w-full flex items-center justify-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-red-500/10 hover:text-red-400 text-slate-400 rounded-xl transition-all text-sm font-medium">
+          <i data-lucide="log-out" class="w-4 h-4"></i>
+          Wyloguj
+        </button>
       </div>
+    </aside>
 
-    </div>
+    <!-- Main Content Area -->
+    <main class="flex-1 flex flex-col h-full overflow-hidden">
+      <!-- Header -->
+      <header class="bg-white border-b border-slate-200 px-8 py-5 flex justify-between items-center shadow-sm z-10">
+        <h2 id="page-title" class="text-xl font-semibold text-slate-800">Zarządzanie Pokojami</h2>
+        <div class="flex items-center gap-2 text-sm text-slate-500 bg-slate-100 px-3 py-1.5 rounded-full border border-slate-200">
+          <i data-lucide="shield-check" class="w-4 h-4 text-emerald-500"></i>
+          Zalogowano jako Admin
+        </div>
+      </header>
+
+      <!-- Scrollable Content -->
+      <div class="flex-1 overflow-auto p-8">
+        
+        <!-- Tab: Rooms -->
+        <div id="content-rooms" class="max-w-5xl mx-auto">
+          <!-- Add Room Form -->
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm mb-8">
+            <h3 class="text-lg font-semibold text-slate-800 mb-4 flex items-center gap-2">
+              <i data-lucide="user-plus" class="w-5 h-5 text-brand-600"></i> Dodaj nowego uczestnika (Pokój)
+            </h3>
+            <div class="flex flex-col md:flex-row gap-4">
+              <div class="flex-1">
+                <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Imię i Nazwisko</label>
+                <input type="text" id="new-name" placeholder="np. Jan Kowalski" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-600 focus:outline-none text-sm">
+              </div>
+              <div class="flex-1">
+                <label class="block text-xs font-medium text-slate-500 uppercase tracking-wider mb-1.5">Adres E-mail</label>
+                <input type="email" id="new-email" placeholder="jan@example.com" class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl focus:ring-2 focus:ring-brand-600 focus:outline-none text-sm">
+              </div>
+              <div class="flex items-end">
+                <button onclick="createRoom()" class="w-full md:w-auto bg-brand-600 hover:bg-brand-700 text-white px-6 py-2.5 rounded-xl font-medium transition-colors shadow-sm flex items-center justify-center gap-2">
+                  <i data-lucide="plus" class="w-4 h-4"></i> Dodaj
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Rooms Table -->
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse">
+                <thead>
+                  <tr class="bg-slate-50 text-slate-500 text-xs uppercase tracking-wider border-b border-slate-200">
+                    <th class="p-4 font-semibold">Pokój</th>
+                    <th class="p-4 font-semibold">Uczestnik</th>
+                    <th class="p-4 font-semibold">Telefon</th>
+                    <th class="p-4 font-semibold">Token (Skopiuj)</th>
+                    <th class="p-4 font-semibold text-right">Akcja</th>
+                  </tr>
+                </thead>
+                <tbody id="rooms-tbody" class="divide-y divide-slate-100 text-sm">
+                  <!-- JS rows -->
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tab: Tickets -->
+        <div id="content-tickets" class="hidden max-w-5xl mx-auto space-y-8">
+          
+          <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+            <!-- Maintenance Tickets -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                <h3 class="font-semibold text-slate-800 flex items-center gap-2">
+                  <div class="p-1.5 bg-orange-100 text-orange-600 rounded-lg"><i data-lucide="wrench" class="w-4 h-4"></i></div>
+                  Usterki (Maintenance)
+                </h3>
+              </div>
+              <div class="p-0 flex-1 overflow-auto max-h-[600px]">
+                <ul id="maintenance-list" class="divide-y divide-slate-100"></ul>
+              </div>
+            </div>
+
+            <!-- Housekeeping Tickets -->
+            <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden flex flex-col">
+              <div class="px-6 py-4 border-b border-slate-100 bg-slate-50 flex items-center justify-between">
+                <h3 class="font-semibold text-slate-800 flex items-center gap-2">
+                  <div class="p-1.5 bg-blue-100 text-blue-600 rounded-lg"><i data-lucide="sparkles" class="w-4 h-4"></i></div>
+                  Sprzątanie (Housekeeping)
+                </h3>
+              </div>
+              <div class="p-0 flex-1 overflow-auto max-h-[600px]">
+                <ul id="housekeeping-list" class="divide-y divide-slate-100"></ul>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
+    </main>
   </div>
 
   <script>
+    lucide.createIcons();
     let adminSecret = localStorage.getItem('admin_secret');
-    
-    // Inicjalizacja
-    if (adminSecret) {
-      showDashboard();
-    }
+    const loginView = document.getElementById('login-view');
+    const dashboardView = document.getElementById('dashboard-view');
+
+    if (adminSecret) showDashboard();
 
     function loginAdmin() {
       const secret = document.getElementById('admin-secret').value.trim();
-      if (!secret) return;
+      if (!secret) return alert('Podaj hasło!');
       adminSecret = secret;
       localStorage.setItem('admin_secret', secret);
       showDashboard();
     }
 
     function logoutAdmin() {
-      adminSecret = null;
       localStorage.removeItem('admin_secret');
-      document.getElementById('dashboard-view').classList.add('hidden');
-      document.getElementById('login-view').classList.remove('hidden');
+      adminSecret = null;
+      dashboardView.classList.add('hidden');
+      loginView.classList.remove('hidden');
     }
 
     function showDashboard() {
-      document.getElementById('login-view').classList.add('hidden');
-      document.getElementById('dashboard-view').classList.remove('hidden');
-      fetchData();
+      loginView.classList.add('hidden');
+      dashboardView.classList.remove('hidden');
+      fetchRooms();
     }
 
     function switchTab(tab) {
       document.getElementById('content-rooms').classList.add('hidden');
       document.getElementById('content-tickets').classList.add('hidden');
-      
-      document.getElementById('tab-rooms').className = "px-5 py-2.5 font-medium rounded-lg bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 transition";
-      document.getElementById('tab-tickets').className = "px-5 py-2.5 font-medium rounded-lg bg-white text-gray-600 border border-gray-300 hover:bg-gray-50 transition";
-      
-      document.getElementById(`content-${tab}`).classList.remove('hidden');
-      document.getElementById(`tab-${tab}`).className = "px-5 py-2.5 font-medium rounded-lg bg-blue-600 text-white transition";
-    }
+      document.getElementById('tab-rooms').classList.replace('bg-slate-800', 'hover:bg-slate-800');
+      document.getElementById('tab-rooms').classList.replace('text-white', 'text-slate-300');
+      document.getElementById('tab-tickets').classList.replace('bg-slate-800', 'hover:bg-slate-800');
+      document.getElementById('tab-tickets').classList.replace('text-white', 'text-slate-300');
 
-    // ----------------------------------------------------
-    // API CALLS
-    // ----------------------------------------------------
-
-    async function apiRequest(endpoint, method = 'GET', body = null) {
-      const options = {
-        method,
-        headers: {
-          'Authorization': `Bearer ${adminSecret}`,
-          'Content-Type': 'application/json'
-        }
-      };
-      if (body) options.body = JSON.stringify(body);
-      
-      const res = await fetch(endpoint, options);
-      if (res.status === 401 || res.status === 403) {
-        alert('Błędne hasło administratora!');
-        logoutAdmin();
-        return null;
+      if (tab === 'rooms') {
+        document.getElementById('content-rooms').classList.remove('hidden');
+        document.getElementById('tab-rooms').classList.add('bg-slate-800', 'text-white');
+        document.getElementById('page-title').innerText = 'Zarządzanie Pokojami';
+        fetchRooms();
+      } else {
+        document.getElementById('content-tickets').classList.remove('hidden');
+        document.getElementById('tab-tickets').classList.add('bg-slate-800', 'text-white');
+        document.getElementById('page-title').innerText = 'Zgłoszenia (Tickets)';
+        fetchTickets();
       }
-      return await res.json();
-    }
-
-    async function fetchData() {
-      if (!adminSecret) return;
-      await fetchRooms();
-      await fetchTickets();
     }
 
     async function fetchRooms() {
-      const rooms = await apiRequest('/api/admin/rooms');
-      if (!rooms) return;
-
-      const tbody = document.getElementById('rooms-tbody');
-      tbody.innerHTML = '';
-
-      rooms.forEach(room => {
-        tbody.innerHTML += `
-          <tr class="hover:bg-gray-50">
-            <td class="p-3 font-semibold text-gray-900">${room.number}</td>
-            <td class="p-3 text-gray-800">${room.participant_name || '—'}</td>
-            <td class="p-3 text-gray-500">${room.participant_email || '—'}</td>
-            <td class="p-3 text-gray-800 font-mono text-sm">${room.phone_number}</td>
-            <td class="p-3 text-gray-500 font-mono text-xs select-all bg-gray-100 rounded px-2 py-1">${room.access_token}</td>
-            <td class="p-3 text-right">
-              <button onclick="deleteRoom('${room.number}')" class="text-red-500 hover:text-red-700 text-sm font-medium">Usuń</button>
-            </td>
-          </tr>
-        `;
-      });
+      try {
+        const res = await fetch('/api/admin/rooms', { headers: { 'Authorization': adminSecret }});
+        if (res.status === 401) { alert('Błędne hasło admina.'); return logoutAdmin(); }
+        const rooms = await res.json();
+        
+        const tbody = document.getElementById('rooms-tbody');
+        tbody.innerHTML = '';
+        rooms.forEach(r => {
+          tbody.innerHTML += `
+            <tr class="hover:bg-slate-50 transition-colors">
+              <td class="p-4 font-bold text-slate-800 text-lg">${r.number}</td>
+              <td class="p-4">
+                <div class="font-medium text-slate-800">${r.guest_name}</div>
+                <div class="text-xs text-slate-500">${r.guest_email}</div>
+              </td>
+              <td class="p-4">
+                <span class="bg-slate-100 text-slate-600 px-2.5 py-1 rounded-md text-xs font-mono border border-slate-200">${r.phone_number}</span>
+              </td>
+              <td class="p-4">
+                <code class="bg-brand-50 text-brand-700 px-2.5 py-1 rounded-md text-xs font-mono border border-brand-200 select-all">${r.access_token}</code>
+              </td>
+              <td class="p-4 text-right">
+                <button onclick="deleteRoom('${r.number}')" class="text-red-500 hover:bg-red-50 p-2 rounded-lg transition-colors tooltip" title="Usuń pokój">
+                  <i data-lucide="trash-2" class="w-5 h-5"></i>
+                </button>
+              </td>
+            </tr>
+          `;
+        });
+        lucide.createIcons();
+      } catch (err) { console.error(err); }
     }
 
     async function createRoom() {
-      const name = document.getElementById('new-name').value.trim();
-      const email = document.getElementById('new-email').value.trim();
-      if (!name) return alert('Podaj imię i nazwisko');
+      const name = document.getElementById('new-name').value;
+      const email = document.getElementById('new-email').value;
+      if (!name || !email) return alert('Wypełnij imię i email');
       
-      await apiRequest('/api/admin/rooms', 'POST', { participant_name: name, participant_email: email });
-      document.getElementById('new-name').value = '';
-      document.getElementById('new-email').value = '';
-      fetchRooms();
+      const res = await fetch('/api/admin/rooms', {
+        method: 'POST',
+        headers: { 'Authorization': adminSecret, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ guest_name: name, guest_email: email })
+      });
+      if (res.ok) {
+        document.getElementById('new-name').value = '';
+        document.getElementById('new-email').value = '';
+        fetchRooms();
+      } else {
+        alert('Błąd podczas tworzenia pokoju');
+      }
     }
 
     async function deleteRoom(number) {
       if (!confirm(`Usunąć pokój ${number}?`)) return;
-      await apiRequest(`/api/admin/rooms/${number}`, 'DELETE');
+      await fetch(`/api/admin/rooms/${number}`, {
+        method: 'DELETE',
+        headers: { 'Authorization': adminSecret }
+      });
       fetchRooms();
     }
 
+    function getAdminStatusBadge(status) {
+      const badges = {
+        'open': '<span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold uppercase tracking-wider">Open</span>',
+        'pending': '<span class="px-2 py-0.5 bg-amber-100 text-amber-700 rounded text-[10px] font-bold uppercase tracking-wider">Pending</span>',
+        'in_progress': '<span class="px-2 py-0.5 bg-blue-100 text-blue-700 rounded text-[10px] font-bold uppercase tracking-wider">In Progress</span>',
+        'resolved': '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold uppercase tracking-wider">Resolved</span>',
+        'completed': '<span class="px-2 py-0.5 bg-emerald-100 text-emerald-700 rounded text-[10px] font-bold uppercase tracking-wider">Completed</span>'
+      };
+      return badges[status] || status;
+    }
+
     async function fetchTickets() {
-      const data = await apiRequest('/api/admin/tickets');
-      if (!data) return;
+      try {
+        const res = await fetch('/api/admin/tickets', { headers: { 'Authorization': adminSecret }});
+        const data = await res.json();
+        
+        const mList = document.getElementById('maintenance-list');
+        mList.innerHTML = '';
+        data.maintenance.forEach(t => {
+          mList.innerHTML += `
+            <li class="p-5 hover:bg-slate-50 transition-colors">
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-800">Pokój ${t.room_number}</span>
+                  <span class="text-xs font-mono text-slate-400">#${t.id}</span>
+                </div>
+                ${getAdminStatusBadge(t.status)}
+              </div>
+              <p class="text-sm text-slate-600 mb-3 font-medium capitalize"><i data-lucide="tag" class="w-3.5 h-3.5 inline mr-1 text-slate-400"></i>${t.category}</p>
+              <div class="flex items-center gap-2 mt-2">
+                <select id="status-m-${t.id}" class="text-xs border-slate-200 rounded bg-slate-50 py-1 px-2 focus:ring-brand-500">
+                  <option value="open" ${t.status==='open'?'selected':''}>Open</option>
+                  <option value="in_progress" ${t.status==='in_progress'?'selected':''}>In Progress</option>
+                  <option value="resolved" ${t.status==='resolved'?'selected':''}>Resolved</option>
+                </select>
+                <button onclick="changeStatus('maintenance', ${t.id})" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded font-medium transition-colors">Zapisz</button>
+              </div>
+            </li>
+          `;
+        });
 
-      // Render Maintenance
-      const mList = document.getElementById('maintenance-list');
-      mList.innerHTML = '';
-      data.maintenance.forEach(t => {
-        mList.innerHTML += createTicketHTML('maintenance', t);
+        const hList = document.getElementById('housekeeping-list');
+        hList.innerHTML = '';
+        data.housekeeping.forEach(t => {
+          hList.innerHTML += `
+            <li class="p-5 hover:bg-slate-50 transition-colors">
+              <div class="flex justify-between items-start mb-2">
+                <div class="flex items-center gap-2">
+                  <span class="font-bold text-slate-800">Pokój ${t.room_number}</span>
+                  <span class="text-xs font-mono text-slate-400">#${t.id}</span>
+                </div>
+                ${getAdminStatusBadge(t.status)}
+              </div>
+              <p class="text-sm text-slate-600 mb-3 font-mono bg-slate-100 p-2 rounded">${t.items}</p>
+              <div class="flex items-center gap-2 mt-2">
+                <select id="status-h-${t.id}" class="text-xs border-slate-200 rounded bg-slate-50 py-1 px-2 focus:ring-brand-500">
+                  <option value="pending" ${t.status==='pending'?'selected':''}>Pending</option>
+                  <option value="in_progress" ${t.status==='in_progress'?'selected':''}>In Progress</option>
+                  <option value="completed" ${t.status==='completed'?'selected':''}>Completed</option>
+                </select>
+                <button onclick="changeStatus('housekeeping', ${t.id})" class="text-xs bg-slate-200 hover:bg-slate-300 text-slate-700 px-3 py-1 rounded font-medium transition-colors">Zapisz</button>
+              </div>
+            </li>
+          `;
+        });
+        lucide.createIcons();
+      } catch (err) { console.error(err); }
+    }
+
+    async function changeStatus(type, id) {
+      const newStatus = document.getElementById(`status-${type==='maintenance'?'m':'h'}-${id}`).value;
+      const res = await fetch(`/api/admin/tickets/${type}/${id}`, {
+        method: 'PATCH',
+        headers: { 'Authorization': adminSecret, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status: newStatus })
       });
-
-      // Render Housekeeping
-      const hkList = document.getElementById('housekeeping-list');
-      hkList.innerHTML = '';
-      data.housekeeping.forEach(t => {
-        hkList.innerHTML += createTicketHTML('housekeeping', t);
-      });
+      if (res.ok) fetchTickets();
+      else alert('Błąd aktualizacji statusu');
     }
-
-    function createTicketHTML(type, t) {
-      const bg = t.status === 'resolved' || t.status === 'completed' ? 'bg-green-50 border-green-200' : 'bg-gray-50 border-gray-200';
-      
-      return `
-        <div class="border rounded-lg p-4 ${bg} shadow-sm">
-          <div class="flex justify-between items-start mb-2">
-            <div>
-              <span class="font-bold text-gray-900">${t.id}</span>
-              <span class="text-xs ml-2 text-gray-500">Pokój: <span class="font-bold text-gray-800">${t.room_number}</span></span>
-            </div>
-            <div>
-              <select onchange="changeStatus('${type}', '${t.id}', this.value)" class="text-xs border rounded p-1 font-medium bg-white outline-none">
-                <option value="open" ${t.status==='open'||t.status==='pending' ? 'selected':''}>Otwarty (Pending)</option>
-                <option value="in_progress" ${t.status==='in_progress' ? 'selected':''}>W realizacji</option>
-                <option value="${type==='maintenance'?'resolved':'completed'}" ${t.status==='resolved'||t.status==='completed' ? 'selected':''}>Zakończony</option>
-              </select>
-            </div>
-          </div>
-          <div class="text-sm text-gray-700">
-            ${type === 'maintenance' 
-              ? `<span class="font-semibold text-red-600">[${t.category.toUpperCase()}]</span> ${t.description}` 
-              : `<span class="font-semibold text-blue-600">[Items]</span> ${t.items}`
-            }
-          </div>
-        </div>
-      `;
-    }
-
-    async function changeStatus(type, id, status) {
-      await apiRequest(`/api/admin/tickets/${type}/${id}`, 'PUT', { status });
-      // Brak przeładowania całej tabeli, aby nie migało UI (zmiana jest w tle)
-    }
-
   </script>
 </body>
 </html>
