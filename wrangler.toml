@@ -11,7 +11,7 @@ assets = { directory = "public" }
 [[d1_databases]]
 binding = "DB"
 database_name = "hotel-db"
-database_id = "placeholder-create-via-wrangler"
+database_id = "3eae16a9-0e30-4abb-8662-e2bdccd6d6c4"
 
 # Environment variables (non-secret)
 [vars]
